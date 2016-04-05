@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
 
 public class DBUtil {
 
-	private static DataSource dataSource=DruidUtil.getDataSource();
+	private static DataSource dataSource=DataSourcePool.getDataSource();
 	
 	private static Logger logger = Logger.getLogger(DBUtil.class);
 	
