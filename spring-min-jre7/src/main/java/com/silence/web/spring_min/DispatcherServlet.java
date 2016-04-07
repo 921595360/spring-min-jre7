@@ -150,64 +150,81 @@ public class DispatcherServlet extends HttpServlet {
 				
 				Object result = MeThodUtil.invokeMethod(paramString, paramsMap);
 				
-				boolean isJson=false;
-				
-				switch (result.getClass().getName()) {
-				
-				case "java.lang.String":
-					break;
-					
-				case "int":
-					break;
-				
-				case "java.lang.Integer":
-					break;
-					
-				case "float":
-					break;
-					
-				case "java.lang.Float":
-					break;
-				
-				case "double":
-					break;
-					
-				case "java.lang.Double":
-					break;
-					
-				case "java.util.ArrayList":
-					String resultStr="[";
-					List<Object> tmp=(List<Object>) result;
-					for (int i=0;i<tmp.size();i++) {
-						resultStr+=JSONUtil.toJSON(tmp.get(i)).toString();
-						if(i!=tmp.size()-1){
-							resultStr+=",";
-						}
-					}
-					
-					resultStr+="]";
-					
-					result=resultStr;
-					
-					break;	
-					
-				default:
-					isJson=true;
-					break;
-				}
-				if(isJson){
-					
-					response.getWriter().write(JSONUtil.toJSON(result).toString());
-				}else{
-					response.getWriter().write(result.toString());
-				} 
-				
-				WebLogUtil.addMsg(DispatcherServlet.class.toString()+"mapping:执行结束，处理结果："+result);
-				
+				afterInvoke(result, request, response);
 			} catch (Exception e) {
 				WebLogUtil.addMsg(DispatcherServlet.class.toString()+"mapping:映射失败："+e.getMessage());
 				e.printStackTrace();
 			}
+	}
+	
+	/**
+	 * 
+	 * afterInvoke(控制器方法执行完毕后处理响应)  
+	 * @param result
+	 * @param request
+	 * @param response
+	 * @throws IOException    
+	 * @since  1.0.0
+	 */
+	public void afterInvoke(Object result,HttpServletRequest request,HttpServletResponse response) throws IOException{
+		boolean isJson=false;
+		
+		switch (result.getClass().getName()) {
+		
+		case "java.lang.String":
+			break;
+			
+		case "int":
+			break;
+		
+		case "java.lang.Integer":
+			break;
+			
+		case "float":
+			break;
+			
+		case "java.lang.Float":
+			break;
+		
+		case "double":
+			break;
+			
+		case "java.lang.Double":
+			break;
+			
+		case "java.util.ArrayList":
+			String resultStr="[";
+			List<Object> tmp=(List<Object>) result;
+			for (int i=0;i<tmp.size();i++) {
+				resultStr+=JSONUtil.toJSON(tmp.get(i)).toString();
+				if(i!=tmp.size()-1){
+					resultStr+=",";
+				}
+			}
+			
+			resultStr+="]";
+			
+			result=resultStr;
+			//设置返回json数据
+			response.setContentType("application/json;charset=UTF-8");
+			response.getWriter().write(result.toString());
+			WebLogUtil.addMsg(DispatcherServlet.class.toString()+"mapping:执行结束，处理结果："+result);
+			return;
+			
+		default:
+			isJson=true;
+			break;
+		}
+		if(isJson){
+			//设置返回json数据
+			response.setContentType("application/json;charset=UTF-8");
+			response.getWriter().write(JSONUtil.toJSON(result).toString());
+		}else{
+			response.getWriter().write(result.toString());
+		} 
+		
+		WebLogUtil.addMsg(DispatcherServlet.class.toString()+"mapping:执行结束，处理结果："+result);
+		
 	}
 	
 	/**
