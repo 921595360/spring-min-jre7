@@ -66,7 +66,7 @@ public class DispatcherServlet extends HttpServlet {
 			path=request.getRequestURL().substring("http://".length());
 			path=path.substring(path.indexOf("/"));
 		}
-		
+
 		WebLogUtil.addMsg(DispatcherServlet.class.toString()+"mapping:正在进行请求映射path:"+path);
 		Map<String, Method> requestMappings = ContextLoaderListener.getApplicationContext().getRequestMappings();
 		WebLogUtil.addMsg(DispatcherServlet.class.toString()+"mapping:requestMappings:"+requestMappings);
@@ -210,6 +210,15 @@ public class DispatcherServlet extends HttpServlet {
 			response.getWriter().write(result.toString());
 			WebLogUtil.addMsg(DispatcherServlet.class.toString()+"mapping:执行结束，处理结果："+result);
 			return;
+
+			case "com.silence.web.spring_min.ModelAndView":
+				ModelAndView mv= (ModelAndView)result;
+				try {
+					request.getRequestDispatcher(mv.getViewName()).forward(request,response);
+				} catch (ServletException e) {
+					e.printStackTrace();
+				}
+				return;
 			
 		default:
 			isJson=true;
