@@ -1,7 +1,6 @@
 package com.silence.web.spring_min;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
@@ -77,80 +76,85 @@ public class DispatcherServlet extends HttpServlet {
 		
 		setEncoding(request, response);
 			try {
-				if(method==null) return;
-				Class<?>[] parameterTypes = method.getParameterTypes();
-				
-				
-				Map<String,Object> paramsMap=new HashMap<String,Object>(); 
-				paramsMap.put("method", method);
-				
-				String paramString="method.invoke(targetObj";
-				Object targetObj = BeanFactory.getInstance().getBean(method.getDeclaringClass());
-				paramsMap.put("targetObj", targetObj);
-				//获取参数名称
-				String[] parameterNames = ParameterNameUtils.getMethodParameterNames(method);
-				
-				for (int i = 0; i < parameterTypes.length; i++) {
-					
-					Object value=null;
-					
-					switch (parameterTypes[i].getName()) {
-					
-					case "javax.servlet.http.HttpServletRequest":
-						value=request;
-						break;
-						
-					case "javax.servlet.http.HttpServletResponse":
-						value=response;
-						break;
-						
-					case "java.lang.String":
-						value=request.getParameter(parameterNames[i]);
-						break;
-						
-					case "int":
-						value=Integer.valueOf(request.getParameter(parameterNames[i]));
-						break;
-					
-					case "java.lang.Integer":
-						value=Integer.valueOf(request.getParameter(parameterNames[i]));
-						break;
-						
-					case "float":
-						value=Float.valueOf(request.getParameter(parameterNames[i]));
-						break;
-						
-					case "java.lang.Float":
-						value=Float.valueOf(request.getParameter(parameterNames[i]));
-						break;
-					
-					case "double":
-						value=Double.valueOf(request.getParameter(parameterNames[i]));
-						break;
-						
-					case "java.lang.Double":
-						value=Double.valueOf(request.getParameter(parameterNames[i]));
-						break;
+				if(method!=null) {
+					Class<?>[] parameterTypes = method.getParameterTypes();
 
-					default:
-						String valueString=request.getParameter(parameterNames[i]);
-						value = parameterTypes[i].newInstance();
-						value=JSONUtil.toJavaBean(value, JSONUtil.toMap(valueString));
-						break;
+
+					Map<String, Object> paramsMap = new HashMap<String, Object>();
+					paramsMap.put("method", method);
+
+					String paramString = "method.invoke(targetObj";
+					Object targetObj = BeanFactory.getInstance().getBean(method.getDeclaringClass());
+					paramsMap.put("targetObj", targetObj);
+					//获取参数名称
+					String[] parameterNames = ParameterNameUtils.getMethodParameterNames(method);
+
+					for (int i = 0; i < parameterTypes.length; i++) {
+
+						Object value = null;
+
+						switch (parameterTypes[i].getName()) {
+
+							case "javax.servlet.http.HttpServletRequest":
+								value = request;
+								break;
+
+							case "javax.servlet.http.HttpServletResponse":
+								value = response;
+								break;
+
+							case "java.lang.String":
+								value = request.getParameter(parameterNames[i]);
+								break;
+
+							case "int":
+								value = Integer.valueOf(request.getParameter(parameterNames[i]));
+								break;
+
+							case "java.lang.Integer":
+								value = Integer.valueOf(request.getParameter(parameterNames[i]));
+								break;
+
+							case "float":
+								value = Float.valueOf(request.getParameter(parameterNames[i]));
+								break;
+
+							case "java.lang.Float":
+								value = Float.valueOf(request.getParameter(parameterNames[i]));
+								break;
+
+							case "double":
+								value = Double.valueOf(request.getParameter(parameterNames[i]));
+								break;
+
+							case "java.lang.Double":
+								value = Double.valueOf(request.getParameter(parameterNames[i]));
+								break;
+
+							default:
+								String valueString = request.getParameter(parameterNames[i]);
+								value = parameterTypes[i].newInstance();
+								value = JSONUtil.toJavaBean(value, JSONUtil.toMap(valueString));
+								break;
+						}
+
+						paramString += "," + parameterNames[i];
+
+						paramsMap.put(parameterNames[i], value);
+
 					}
-					
-					paramString+=","+parameterNames[i];
-					
-					paramsMap.put(parameterNames[i],value);
-					
+					paramString += ")";
+
+					WebLogUtil.addMsg(DispatcherServlet.class.toString() + "mapping:准备执行：" + paramString);
+
+					Object result = MeThodUtil.invokeMethod(paramString, paramsMap);
+
+					afterInvoke(result, request, response);
+				}else{
+					//如果无法映射到方法，则直接输出文件
+					mappingFile(path,response);
+
 				}
-				paramString+=")";
-				
-				WebLogUtil.addMsg(DispatcherServlet.class.toString()+"mapping:准备执行："+paramString);
-				
-				Object result = MeThodUtil.invokeMethod(paramString, paramsMap);
-				
-				afterInvoke(result, request, response);
 			} catch (Exception e) {
 				WebLogUtil.addMsg(DispatcherServlet.class.toString()+"mapping:映射失败："+e.getMessage());
 				e.printStackTrace();
@@ -248,6 +252,40 @@ public class DispatcherServlet extends HttpServlet {
 			response.setContentType("text/html;charset=utf-8");
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * 映射文件
+	 * @param path
+	 * @param response
+	 */
+	public void mappingFile(String path,HttpServletResponse response){
+		String filePath  = this.getServletContext().getRealPath(path);
+		InputStream is=null;
+		OutputStream os;
+		response.setHeader("Content-Type","");
+
+
+
+		try {
+			os=response.getOutputStream();
+			is=new FileInputStream(filePath);
+			int len;
+			byte [] b=new byte[1024];
+			while((len=is.read(b))>0){
+				os.write(b,0,len);
+			}
+		} catch (Exception e) {
+
+		} finally {
+			if(is!=null){
+				try {
+					is.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 }
