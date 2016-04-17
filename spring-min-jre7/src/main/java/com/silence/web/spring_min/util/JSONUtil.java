@@ -1,11 +1,11 @@
 package com.silence.web.spring_min.util;
 
+
 import java.lang.reflect.Method;
 import java.text.ParseException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -23,35 +23,6 @@ import org.json.JSONObject;
  */
 public class JSONUtil {
 
-    public static Map toMap(Object javaBean) {
-
-        Map result = new HashMap();
-        Method[] methods = javaBean.getClass().getDeclaredMethods();
-
-        for (Method method : methods) {
-
-            try {
-
-                if (method.getName().startsWith("get")) {
-
-                    String field = method.getName();
-                    field = field.substring(field.indexOf("get") + 3);
-                    field = field.toLowerCase().charAt(0) + field.substring(1);
-
-                    Object value = method.invoke(javaBean, (Object[]) null);
-                    result.put(field, null == value ? "" : value.toString());
-
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-        }
-
-        return result;
-
-    }
 
     public static Map toMap(String jsonString) throws JSONException {
 
@@ -74,9 +45,12 @@ public class JSONUtil {
     }
 
     public static JSONObject toJSON(Object bean) {
-
-        return new JSONObject(toMap(bean));
-
+        JSONObject o=new JSONObject(bean);
+        return o;
+    }
+    public static JSONArray toArrayJSON(ArrayList bean) {
+        JSONArray o=new JSONArray(bean);
+        return o;
     }
 
     public static Object toJavaBean(Object javabean, Map data) {
@@ -116,4 +90,5 @@ public class JSONUtil {
         toJavaBean(javabean, map);
 
     }
+
 }

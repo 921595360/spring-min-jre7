@@ -3,6 +3,8 @@ package com.silence.web.spring_min.util;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -26,6 +28,35 @@ import java.util.jar.JarFile;
  */
 public class ClassUtil {
 
+	/**
+	 * 获取指定对象的属性（包含父类的属性）
+	 * @param bean
+	 * @return
+	 */
+	public static Field [] getAllFields(Object bean){
+		Field[] fields= bean.getClass().getDeclaredFields();
+		Field [] superFileds= bean.getClass().getSuperclass().getDeclaredFields();
+		Field [] tmp=new Field[fields.length+superFileds.length];
+		System.arraycopy(fields,0,tmp,0,fields.length);
+		System.arraycopy(superFileds,0,tmp,fields.length,superFileds.length);
+		fields=tmp;
+		return fields;
+	}
+
+	/**
+	 * 获取指定对象的所有方法（包含父类方法）
+	 * @param bean
+	 * @return
+	 */
+	public static Method [] getAllMethods(Object bean){
+		Method [] methods=bean.getClass().getDeclaredMethods();
+		Method [] superMethods=bean.getClass().getSuperclass().getMethods();
+		Method [] tmp1=new Method[methods.length+superMethods.length];
+		System.arraycopy(methods,0,tmp1,0,methods.length);
+		System.arraycopy(superMethods,0,tmp1,methods.length,superMethods.length);
+		methods=tmp1;
+		return methods;
+	}
 	
 
 	public static List<Class<?>> getClasses(String packageName,String [] excludePackages,String [] excludeClasses){

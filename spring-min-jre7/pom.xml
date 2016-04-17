@@ -42,12 +42,12 @@
 			<version>3.18.1-GA</version>
 		</dependency>
 
-		<!--json字符串处理 -->
-		<dependency>
-			<groupId>org.json</groupId>
-			<artifactId>json</artifactId>
-			<version>20131018</version>
-		</dependency>
+	  <!--json字符串处理 -->
+	  <dependency>
+		  <groupId>org.json</groupId>
+		  <artifactId>json</artifactId>
+		  <version>20131018</version>
+	  </dependency>
 
 		<!-- beanUtils -->
 		<dependency>
