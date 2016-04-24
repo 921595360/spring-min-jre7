@@ -10,15 +10,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * 
- *   
+ *
+ *
  * JSONUtil  
- *   
+ *
  * silence  
  * silence  
  * 2016年3月20日 下午7:46:37  
- *   
- * @version 1.0.0  
+ *
+ * @version 1.0.0
  *
  */
 public class JSONUtil {
@@ -27,12 +27,32 @@ public class JSONUtil {
     public static Map toMap(String jsonString) throws JSONException {
 
         JSONObject jsonObject = new JSONObject(jsonString);
-        
+
         Map result = new HashMap();
         Iterator iterator = jsonObject.keys();
         String key = null;
         String value = null;
-        
+
+        while (iterator.hasNext()) {
+
+            key = (String) iterator.next();
+            value = jsonObject.getString(key);
+            result.put(key, value);
+
+        }
+        return result;
+
+    }
+
+    public static Map toMap(Object javaBean) throws JSONException {
+
+        JSONObject jsonObject = new JSONObject(javaBean);
+
+        Map result = new HashMap();
+        Iterator iterator = jsonObject.keys();
+        String key = null;
+        String value = null;
+
         while (iterator.hasNext()) {
 
             key = (String) iterator.next();
@@ -66,7 +86,7 @@ public class JSONUtil {
                     field = field.toLowerCase().charAt(0) + field.substring(1);
                     method.invoke(javabean, new Object[] {
 
-                    data.get(field)
+                            data.get(field)
 
                     });
 
@@ -84,9 +104,9 @@ public class JSONUtil {
             throws ParseException, JSONException {
 
         JSONObject jsonObject = new JSONObject(jsonString);
-    
+
         Map map = toMap(jsonObject.toString());
-        
+
         toJavaBean(javabean, map);
 
     }

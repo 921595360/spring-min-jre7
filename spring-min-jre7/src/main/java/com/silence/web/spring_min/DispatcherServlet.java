@@ -12,13 +12,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.silence.web.spring_min.util.*;
 import org.apache.log4j.Logger;
 
 import com.silence.web.spring_min.bean.factory.BeanFactory;
-import com.silence.web.spring_min.util.JSONUtil;
-import com.silence.web.spring_min.util.MeThodUtil;
-import com.silence.web.spring_min.util.ParameterNameUtils;
-import com.silence.web.spring_min.util.WebLogUtil;
 
 
 /**
@@ -65,13 +62,13 @@ public class DispatcherServlet extends HttpServlet {
             path = path.substring(path.indexOf("/"));
         }
 
-        WebLogUtil.addMsg(DispatcherServlet.class.toString() + "mapping:正在进行请求映射path:" + path);
+        //WebLogUtil.addMsg(DispatcherServlet.class.toString() + "mapping:正在进行请求映射path:" + path);
         Map<String, Method> requestMappings = ContextLoaderListener.getApplicationContext().getRequestMappings();
-        WebLogUtil.addMsg(DispatcherServlet.class.toString() + "mapping:requestMappings:" + requestMappings);
+        //WebLogUtil.addMsg(DispatcherServlet.class.toString() + "mapping:requestMappings:" + requestMappings);
 
         Method method = requestMappings.get(path);
 
-        WebLogUtil.addMsg(DispatcherServlet.class.toString() + ":mapping==>method:" + method);
+        //WebLogUtil.addMsg(DispatcherServlet.class.toString() + ":mapping==>method:" + method);
 
         setEncoding(request, response);
         try {
@@ -87,6 +84,22 @@ public class DispatcherServlet extends HttpServlet {
                 paramsMap.put("targetObj", targetObj);
                 //获取参数名称
                 String[] parameterNames = ParameterNameUtils.getMethodParameterNames(method);
+
+
+                //处理mopoyun中奇怪的多出的一个this参数，采用直接覆盖的方式
+                int unUseIndex=-1;
+                for(int i=0;i<parameterNames.length;i++){
+                    if(parameterNames[i].equals("this")){
+                        unUseIndex=i;
+                        break;
+                    }
+                }
+               if(unUseIndex>-1){
+                   for(int i=unUseIndex+1;i<parameterNames.length;i++){
+                       parameterNames[i-1]=parameterNames[i];
+                   }
+               }
+
 
                 for (int i = 0; i < parameterTypes.length; i++) {
 
@@ -144,7 +157,7 @@ public class DispatcherServlet extends HttpServlet {
                 }
                 paramString += ")";
 
-                WebLogUtil.addMsg(DispatcherServlet.class.toString() + "mapping:准备执行：" + paramString);
+                //WebLogUtil.addMsg(DispatcherServlet.class.toString() + "mapping:准备执行：" + paramString);
 
                 Object result = MeThodUtil.invokeMethod(paramString, paramsMap);
 
@@ -155,7 +168,7 @@ public class DispatcherServlet extends HttpServlet {
 
             }
         } catch (Exception e) {
-            WebLogUtil.addMsg(DispatcherServlet.class.toString() + "mapping:映射失败：" + e.getMessage());
+            WebLogUtil.addMsg(DispatcherServlet.class.toString() + "mapping:映射失败：" + ExceptionUtil.getErrorInfoFromException(e));
             e.printStackTrace();
         }
     }
@@ -180,7 +193,7 @@ public class DispatcherServlet extends HttpServlet {
 
                 response.setContentType("application/json;charset=UTF-8");
                 response.getWriter().write(JSONUtil.toArrayJSON(((ArrayList)result)).toString());
-                WebLogUtil.addMsg(DispatcherServlet.class.toString() + "mapping:执行结束，处理结果：" + result);
+                //WebLogUtil.addMsg(DispatcherServlet.class.toString() + "mapping:执行结束，处理结果：" + result);
                 return;
             /*跳转页面*/
             case "com.silence.web.spring_min.ModelAndView":
@@ -203,7 +216,7 @@ public class DispatcherServlet extends HttpServlet {
         } else {
             response.getWriter().write(result.toString());
         }
-        WebLogUtil.addMsg(DispatcherServlet.class.toString() + "mapping:执行结束，处理结果：" + result);
+        //WebLogUtil.addMsg(DispatcherServlet.class.toString() + "mapping:执行结束，处理结果：" + result);
     }
 
     /**
